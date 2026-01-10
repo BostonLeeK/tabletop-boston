@@ -26,6 +26,7 @@ function mapGameFromDb(row: any): Game {
     image: row.image,
     category: row.categories?.name || row.category,
     videoUrl: row.video_url,
+    isFavorite: row.is_favorite || false,
   };
 }
 
@@ -44,6 +45,7 @@ async function mapGameToDb(game: Omit<Game, "id"> | Partial<Game>) {
   if (game.playTime !== undefined) dbGame.play_time = game.playTime;
   if (game.image !== undefined) dbGame.image = game.image;
   if (game.videoUrl !== undefined) dbGame.video_url = game.videoUrl;
+  if (game.isFavorite !== undefined) dbGame.is_favorite = game.isFavorite;
 
   if (game.category !== undefined) {
     if (game.category) {

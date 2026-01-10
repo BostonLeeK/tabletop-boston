@@ -15,6 +15,7 @@ export default function Home() {
     "rating"
   );
   const [filterCategory, setFilterCategory] = useState<string>("");
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -53,6 +54,13 @@ export default function Home() {
       filtered = filtered.filter((game) => game.category === filterCategory);
     }
 
+    if (showFavoritesOnly) {
+      const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+      filtered = filtered.filter(
+        (game) => game.isFavorite || favorites.includes(game.id)
+      );
+    }
+
     const sorted = [...filtered].sort((a, b) => {
       switch (sortBy) {
         case "rating":
@@ -67,7 +75,7 @@ export default function Home() {
     });
 
     return sorted;
-  }, [games, searchQuery, sortBy, filterCategory]);
+  }, [games, searchQuery, sortBy, filterCategory, showFavoritesOnly]);
 
   if (loading) {
     return (
@@ -79,7 +87,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-neutral-950">
-      <header className="sticky top-0 z-50 border-b border-neutral-800/50 overflow-hidden">
+      <header className="md:sticky top-0 z-50 border-b border-neutral-800/50 overflow-hidden">
         <div className="relative">
           <div
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -147,6 +155,21 @@ export default function Home() {
                 За часом гри
               </option>
             </select>
+          </div>
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              id="showFavoritesOnly"
+              checked={showFavoritesOnly}
+              onChange={(e) => setShowFavoritesOnly(e.target.checked)}
+              className="w-4 h-4 text-purple-600 bg-neutral-900 border-neutral-700 rounded focus:ring-purple-500 focus:ring-2"
+            />
+            <label
+              htmlFor="showFavoritesOnly"
+              className="text-sm text-neutral-400 cursor-pointer"
+            >
+              Тільки улюблені
+            </label>
           </div>
           <div className="text-sm text-neutral-500 font-medium">
             Знайдено ігор:{" "}

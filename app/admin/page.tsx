@@ -55,6 +55,7 @@ export default function AdminPage() {
     image: "",
     category: "",
     videoUrl: "",
+    isFavorite: false,
   });
 
   useEffect(() => {
@@ -199,6 +200,7 @@ export default function AdminPage() {
       image: game.image || "",
       category: game.category || "",
       videoUrl: game.videoUrl || "",
+      isFavorite: game.isFavorite || false,
     });
     setImagePreview(game.image || "");
     setImageFile(null);
@@ -236,6 +238,7 @@ export default function AdminPage() {
       image: "",
       category: "",
       videoUrl: "",
+      isFavorite: false,
     });
   };
 
@@ -632,6 +635,20 @@ export default function AdminPage() {
                   className="w-full px-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-neutral-600"
                   placeholder="https://youtube.com/watch?v=..."
                 />
+              </div>
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="isFavorite"
+                  checked={formData.isFavorite}
+                  onChange={(e) =>
+                    setFormData({ ...formData, isFavorite: e.target.checked })
+                  }
+                  className="w-4 h-4 text-purple-600 bg-neutral-800 border-neutral-700 rounded focus:ring-purple-500 focus:ring-2"
+                />
+                <label htmlFor="isFavorite" className="text-sm text-neutral-400">
+                  Улюблена гра
+                </label>
               </div>
               <div className="flex gap-3">
                 <button
