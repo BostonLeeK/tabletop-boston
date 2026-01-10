@@ -1,17 +1,22 @@
 "use client";
 
 import {
+  createCategory,
   createGame,
+  deleteCategory,
   deleteGame,
+  getCategories,
   getGames,
   getSession,
   getUser,
   signIn,
   signOut,
+  updateCategory,
   updateGame,
   uploadImage,
 } from "@/lib/supabase";
-import { Game, GAME_CATEGORIES } from "@/types/game";
+import { Category } from "@/types/category";
+import { Game } from "@/types/game";
 import type { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -24,9 +29,16 @@ export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [games, setGames] = useState<Game[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingGame, setEditingGame] = useState<Game | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [showCategories, setShowCategories] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [categoryFormData, setCategoryFormData] = useState({
+    name: "",
+    color: "",
+  });
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -57,7 +69,7 @@ export default function AdminPage() {
         const currentUser = await getUser();
         setUser(currentUser);
         setAuthenticated(true);
-        loadGames();
+        await Promise.all([loadGames(), loadCategories()]);
       } else {
         setLoading(false);
       }
@@ -99,6 +111,15 @@ export default function AdminPage() {
       console.error("Error loading games:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadCategories = async () => {
+    try {
+      const data = await getCategories();
+      setCategories(data);
+    } catch (error) {
+      console.error("Error loading categories:", error);
     }
   };
 
@@ -216,6 +237,44 @@ export default function AdminPage() {
       category: "",
       videoUrl: "",
     });
+  };
+
+  const handleCategorySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (editingCategory) {
+        await updateCategory(editingCategory.id, categoryFormData);
+      } else {
+        await createCategory(categoryFormData);
+      }
+      await loadCategories();
+      setEditingCategory(null);
+      setCategoryFormData({ name: "", color: "" });
+    } catch (error) {
+      console.error("Error saving category:", error);
+      alert("Помилка при збереженні категорії");
+    }
+  };
+
+  const handleCategoryEdit = (category: Category) => {
+    setEditingCategory(category);
+    setCategoryFormData({
+      name: category.name,
+      color: category.color || "",
+    });
+  };
+
+  const handleCategoryDelete = async (id: string) => {
+    if (!confirm("Ви впевнені, що хочете видалити цю категорію?")) {
+      return;
+    }
+    try {
+      await deleteCategory(id);
+      await loadCategories();
+    } catch (error) {
+      console.error("Error deleting category:", error);
+      alert("Помилка при видаленні категорії");
+    }
   };
 
   if (loading) {
@@ -368,9 +427,13 @@ export default function AdminPage() {
                     className="w-full px-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-neutral-600"
                   >
                     <option value="">Оберіть категорію</option>
-                    {GAME_CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat} className="bg-neutral-800">
-                        {cat}
+                    {categories.map((cat) => (
+                      <option
+                        key={cat.id}
+                        value={cat.name}
+                        className="bg-neutral-800"
+                      >
+                        {cat.name}
                       </option>
                     ))}
                   </select>
@@ -556,52 +619,164 @@ export default function AdminPage() {
           </div>
         )}
 
-        <div className="space-y-4">
-          <h2 className="text-2xl font-heading text-white mb-4">
-            Всі ігри ({games.length})
-          </h2>
-          {games.length === 0 ? (
-            <div className="text-center py-12 text-neutral-500">
-              Немає ігор. Додайте першу гру!
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {games.map((game) => (
-                <div
-                  key={game.id}
-                  className="bg-neutral-900 border border-neutral-800 rounded-lg p-4"
+        {showCategories && (
+          <div className="mb-8 bg-neutral-900 border border-neutral-800 rounded-lg p-6">
+            <h2 className="text-xl font-heading text-white mb-4">
+              {editingCategory ? "Редагувати категорію" : "Нова категорія"}
+            </h2>
+            <form onSubmit={handleCategorySubmit} className="space-y-4 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-neutral-400 mb-2">
+                    Назва категорії
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={categoryFormData.name}
+                    onChange={(e) =>
+                      setCategoryFormData({
+                        ...categoryFormData,
+                        name: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-neutral-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-neutral-400 mb-2">
+                    Колір (hex, наприклад: #9333ea)
+                  </label>
+                  <input
+                    type="text"
+                    value={categoryFormData.color}
+                    onChange={(e) =>
+                      setCategoryFormData({
+                        ...categoryFormData,
+                        color: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-neutral-600"
+                    placeholder="#9333ea"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <h3 className="text-lg font-heading text-white">
-                      {game.name}
-                    </h3>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleEdit(game)}
-                        className="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
-                      >
-                        Редагувати
-                      </button>
-                      <button
-                        onClick={() => handleDelete(game.id)}
-                        className="px-3 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded transition-colors"
-                      >
-                        Видалити
-                      </button>
+                  {editingCategory ? "Зберегти зміни" : "Створити"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingCategory(null);
+                    setCategoryFormData({ name: "", color: "" });
+                  }}
+                  className="px-6 py-2.5 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  Скасувати
+                </button>
+              </div>
+            </form>
+
+            <div className="space-y-4">
+              <h3 className="text-lg font-heading text-white">
+                Всі категорії ({categories.length})
+              </h3>
+              {categories.length === 0 ? (
+                <div className="text-center py-8 text-neutral-500">
+                  Немає категорій. Додайте першу категорію!
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {categories.map((category) => (
+                    <div
+                      key={category.id}
+                      className="bg-neutral-800 border border-neutral-700 rounded-lg p-4 flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-3">
+                        {category.color && (
+                          <div
+                            className="w-4 h-4 rounded"
+                            style={{ backgroundColor: category.color }}
+                          />
+                        )}
+                        <span className="text-white font-medium">
+                          {category.name}
+                        </span>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleCategoryEdit(category)}
+                          className="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+                        >
+                          Редагувати
+                        </button>
+                        <button
+                          onClick={() => handleCategoryDelete(category.id)}
+                          className="px-3 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded transition-colors"
+                        >
+                          Видалити
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {!showCategories && (
+          <div className="space-y-4">
+            <h2 className="text-2xl font-heading text-white mb-4">
+              Всі ігри ({games.length})
+            </h2>
+            {games.length === 0 ? (
+              <div className="text-center py-12 text-neutral-500">
+                Немає ігор. Додайте першу гру!
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {games.map((game) => (
+                  <div
+                    key={game.id}
+                    className="bg-neutral-900 border border-neutral-800 rounded-lg p-4"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <h3 className="text-lg font-heading text-white">
+                        {game.name}
+                      </h3>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleEdit(game)}
+                          className="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+                        >
+                          Редагувати
+                        </button>
+                        <button
+                          onClick={() => handleDelete(game.id)}
+                          className="px-3 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded transition-colors"
+                        >
+                          Видалити
+                        </button>
+                      </div>
+                    </div>
+                    <p className="text-sm text-neutral-400 mb-2 line-clamp-2">
+                      {game.description}
+                    </p>
+                    <div className="text-xs text-neutral-500">
+                      Рейтинг: {game.rating} | {game.minPlayers}-
+                      {game.maxPlayers} гравців | {game.playTime} хв
                     </div>
                   </div>
-                  <p className="text-sm text-neutral-400 mb-2 line-clamp-2">
-                    {game.description}
-                  </p>
-                  <div className="text-xs text-neutral-500">
-                    Рейтинг: {game.rating} | {game.minPlayers}-{game.maxPlayers}{" "}
-                    гравців | {game.playTime} хв
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </main>
     </div>
   );

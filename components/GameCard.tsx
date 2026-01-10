@@ -145,9 +145,9 @@ export default function GameCard({ game }: GameCardProps) {
   };
 
   return (
-    <Link href={`/games/${game.id}`} className="block">
-      <div className="group bg-neutral-900/50 border border-neutral-800 rounded-lg overflow-hidden hover:border-neutral-700 transition-all duration-200 hover:bg-neutral-900 cursor-pointer">
-      <div className="h-56 bg-neutral-800/50 flex items-center justify-center relative overflow-hidden">
+    <Link href={`/games/${game.id}`} className="block h-full">
+      <div className="group bg-neutral-900/50 border border-neutral-800 rounded-lg overflow-hidden hover:border-neutral-700 transition-all duration-200 hover:bg-neutral-900 cursor-pointer h-full flex flex-col">
+      <div className="h-56 bg-neutral-800/50 flex items-center justify-center relative overflow-hidden flex-shrink-0">
         <img
           src={game.image || getGameImage(game.id, game.name, game.category)}
           alt={game.name}
@@ -159,19 +159,19 @@ export default function GameCard({ game }: GameCardProps) {
         />
       </div>
 
-      <div className="p-6">
+      <div className="p-6 flex flex-col flex-grow">
         <div className="flex items-start justify-between mb-3">
-          <div>
-            <h3 className="text-xl font-heading text-white">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-xl font-heading text-white truncate">
               {game.name}
             </h3>
             {game.nameEn && (
-              <p className="text-xs text-neutral-500 mt-0.5">{game.nameEn}</p>
+              <p className="text-xs text-neutral-500 mt-0.5 truncate">{game.nameEn}</p>
             )}
           </div>
           {game.category && (
             <span
-              className={`px-2.5 py-1 text-xs font-medium rounded border ${getCategoryColor(
+              className={`px-2.5 py-1 text-xs font-medium rounded border flex-shrink-0 ml-2 ${getCategoryColor(
                 game.category
               )}`}
             >
@@ -180,11 +180,11 @@ export default function GameCard({ game }: GameCardProps) {
           )}
         </div>
 
-        <p className="text-neutral-400 text-sm mb-5 line-clamp-3 leading-relaxed">
+        <p className="text-neutral-400 text-sm mb-5 line-clamp-3 leading-relaxed flex-grow">
           {game.shortDescription || game.description}
         </p>
 
-        <div className="flex items-center gap-2 mb-5">
+        <div className="flex items-center gap-2 mb-5 flex-shrink-0">
           <div className="flex items-center gap-0.5">
             {renderStars()}
           </div>
@@ -193,7 +193,7 @@ export default function GameCard({ game }: GameCardProps) {
           </span>
         </div>
 
-        <div className="flex items-center gap-4 text-xs text-neutral-500 font-medium">
+        <div className="flex items-center gap-4 text-xs text-neutral-500 font-medium flex-shrink-0">
           <span className="flex items-center gap-1.5">
             <svg
               className="w-3.5 h-3.5"

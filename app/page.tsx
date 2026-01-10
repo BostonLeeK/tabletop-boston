@@ -1,12 +1,14 @@
 "use client";
 
 import GameList from "@/components/GameList";
-import { getGames } from "@/lib/supabase";
+import { getCategories, getGames } from "@/lib/supabase";
+import { Category } from "@/types/category";
 import { Game } from "@/types/game";
 import { useEffect, useMemo, useState } from "react";
 
 export default function Home() {
   const [games, setGames] = useState<Game[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"rating" | "name" | "playTime">(
@@ -15,25 +17,22 @@ export default function Home() {
   const [filterCategory, setFilterCategory] = useState<string>("");
 
   useEffect(() => {
-    async function loadGames() {
+    async function loadData() {
       try {
-        const data = await getGames();
-        setGames(data);
+        const [gamesData, categoriesData] = await Promise.all([
+          getGames(),
+          getCategories(),
+        ]);
+        setGames(gamesData);
+        setCategories(categoriesData);
       } catch (error) {
-        console.error("Error loading games:", error);
+        console.error("Error loading data:", error);
       } finally {
         setLoading(false);
       }
     }
-    loadGames();
+    loadData();
   }, []);
-
-  const categories = useMemo(() => {
-    const uniqueCategories = Array.from(
-      new Set(games.map((game) => game.category).filter(Boolean))
-    );
-    return uniqueCategories as string[];
-  }, [games]);
 
   const filteredAndSortedGames = useMemo(() => {
     let filtered: Game[] = games;
@@ -123,11 +122,11 @@ export default function Home() {
               <option value="">Всі категорії</option>
               {categories.map((category) => (
                 <option
-                  key={category}
-                  value={category}
+                  key={category.id}
+                  value={category.name}
                   className="bg-neutral-900"
                 >
-                  {category}
+                  {category.name}
                 </option>
               ))}
             </select>

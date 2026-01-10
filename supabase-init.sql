@@ -1,3 +1,10 @@
+create table if not exists categories (
+  id uuid default gen_random_uuid() primary key,
+  name text not null unique,
+  color text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
 create table if not exists games (
   id uuid default gen_random_uuid() primary key,
   name text not null,
@@ -10,12 +17,29 @@ create table if not exists games (
   max_players integer not null,
   play_time integer not null,
   image text,
-  category text,
+  category_id uuid references categories(id) on delete set null,
   video_url text,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+alter table categories enable row level security;
 alter table games enable row level security;
+
+drop policy if exists "Allow public read access" on categories;
+create policy "Allow public read access" on categories
+  for select using (true);
+
+drop policy if exists "Allow authenticated insert" on categories;
+create policy "Allow authenticated insert" on categories
+  for insert with check (auth.role() = 'authenticated');
+
+drop policy if exists "Allow authenticated update" on categories;
+create policy "Allow authenticated update" on categories
+  for update using (auth.role() = 'authenticated');
+
+drop policy if exists "Allow authenticated delete" on categories;
+create policy "Allow authenticated delete" on categories
+  for delete using (auth.role() = 'authenticated');
 
 drop policy if exists "Allow public read access" on games;
 create policy "Allow public read access" on games
@@ -33,7 +57,7 @@ drop policy if exists "Allow authenticated delete" on games;
 create policy "Allow authenticated delete" on games
   for delete using (auth.role() = 'authenticated');
 
-create index if not exists idx_games_category on games(category);
+create index if not exists idx_games_category_id on games(category_id);
 create index if not exists idx_games_rating on games(rating);
 create index if not exists idx_games_created_at on games(created_at);
 
