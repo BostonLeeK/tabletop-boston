@@ -368,19 +368,52 @@ export default function AdminPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-8">
-        <div className="mb-6">
+        <div className="mb-6 flex gap-3">
           <button
             onClick={() => {
+              setShowCategories(false);
+              setShowForm(false);
+            }}
+            className={`px-4 py-2.5 rounded-lg font-medium transition-colors ${
+              !showCategories && !showForm
+                ? "bg-purple-600 hover:bg-purple-700 text-white"
+                : "bg-neutral-800 hover:bg-neutral-700 text-neutral-300"
+            }`}
+          >
+            Всі ігри
+          </button>
+          <button
+            onClick={() => {
+              setShowCategories(false);
               resetForm();
               setShowForm(true);
             }}
-            className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
+            className={`px-4 py-2.5 rounded-lg font-medium transition-colors ${
+              !showCategories && showForm
+                ? "bg-purple-600 hover:bg-purple-700 text-white"
+                : "bg-neutral-800 hover:bg-neutral-700 text-neutral-300"
+            }`}
           >
             + Додати гру
           </button>
+          <button
+            onClick={() => {
+              setShowForm(false);
+              setShowCategories(true);
+              setEditingCategory(null);
+              setCategoryFormData({ name: "", color: "" });
+            }}
+            className={`px-4 py-2.5 rounded-lg font-medium transition-colors ${
+              showCategories
+                ? "bg-purple-600 hover:bg-purple-700 text-white"
+                : "bg-neutral-800 hover:bg-neutral-700 text-neutral-300"
+            }`}
+          >
+            Керування категоріями
+          </button>
         </div>
 
-        {showForm && (
+        {!showCategories && showForm && (
           <div className="mb-8 bg-neutral-900 border border-neutral-800 rounded-lg p-6">
             <h2 className="text-xl font-heading text-white mb-4">
               {editingGame ? "Редагувати гру" : "Нова гра"}
