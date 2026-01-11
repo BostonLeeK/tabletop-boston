@@ -56,6 +56,7 @@ export default function AdminPage() {
     category: "",
     videoUrl: "",
     isFavorite: false,
+    language: "",
   });
 
   useEffect(() => {
@@ -201,6 +202,7 @@ export default function AdminPage() {
       category: game.category || "",
       videoUrl: game.videoUrl || "",
       isFavorite: game.isFavorite || false,
+      language: game.language || "",
     });
     setImagePreview(game.image || "");
     setImageFile(null);
@@ -239,6 +241,7 @@ export default function AdminPage() {
       category: "",
       videoUrl: "",
       isFavorite: false,
+      language: "",
     });
   };
 
@@ -634,6 +637,20 @@ export default function AdminPage() {
                   }
                   className="w-full px-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-neutral-600"
                   placeholder="https://youtube.com/watch?v=..."
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-neutral-400 mb-2">
+                  Мова гри
+                </label>
+                <input
+                  type="text"
+                  value={formData.language}
+                  onChange={(e) =>
+                    setFormData({ ...formData, language: e.target.value })
+                  }
+                  className="w-full px-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-neutral-600"
+                  placeholder="Українська, Англійська, тощо"
                 />
               </div>
               <div className="flex items-center gap-3">

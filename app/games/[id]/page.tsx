@@ -242,7 +242,7 @@ export default function GameDetailPage() {
               </span>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 mb-8 p-6 bg-neutral-900/50 rounded-lg border border-neutral-800">
+            <div className={`grid gap-4 mb-8 p-6 bg-neutral-900/50 rounded-lg border border-neutral-800 ${game.language ? 'grid-cols-4' : 'grid-cols-3'}`}>
               <div>
                 <div className="text-sm text-neutral-500 mb-1">Гравці</div>
                 <div className="text-xl font-heading text-white">
@@ -261,6 +261,14 @@ export default function GameDetailPage() {
                   {game.rating.toFixed(1)}/5
                 </div>
               </div>
+              {game.language && (
+                <div>
+                  <div className="text-sm text-neutral-500 mb-1">Мова</div>
+                  <div className="text-xl font-heading text-white">
+                    {game.language}
+                  </div>
+                </div>
+              )}
             </div>
 
             {game.shortDescription && (

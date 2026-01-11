@@ -13,6 +13,7 @@ export interface Game {
   category?: string;
   videoUrl?: string;
   isFavorite?: boolean;
+  language?: string;
 }
 
 export const GAME_CATEGORIES = [

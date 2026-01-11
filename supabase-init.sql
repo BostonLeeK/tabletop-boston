@@ -20,6 +20,7 @@ create table if not exists games (
   category_id uuid references categories(id) on delete set null,
   video_url text,
   is_favorite boolean default false not null,
+  language text,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
