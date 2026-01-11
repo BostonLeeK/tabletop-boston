@@ -55,10 +55,7 @@ export default function Home() {
     }
 
     if (showFavoritesOnly) {
-      const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-      filtered = filtered.filter(
-        (game) => game.isFavorite || favorites.includes(game.id)
-      );
+      filtered = filtered.filter((game) => game.isFavorite);
     }
 
     const sorted = [...filtered].sort((a, b) => {
